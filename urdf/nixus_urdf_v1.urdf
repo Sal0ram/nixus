@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<robot name="NIXUS" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="base_h" value="100" />
+  <xacro:property name="shoulder_h" value="102.5" />
+  <xacro:property name="humerus_h" value="312.5" />
+  <xacro:property name="ulna_h" value="100" />
+  <xacro:property name="wrist_h" value="80" />
+  <xacro:property name="end_h" value="110" />
+  <xacro:property name="end_r" value="5" />
+
+  <material name="white">
+    <color rgba="1 1 1 1"/>
+  </material>
+
+  <link name="base_link">
+    <visual>
+    <origin rpy="0.0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://nixus_arm/meshes/NIXUS_base.stl"/>
+      </geometry>
+    </visual>
+  </link>
+
+    <joint name="base_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="shoulder_link"/>
+    <limit effort="1000.0" lower="-${pi/2}" upper="${pi/2}" velocity="0.5"/>
+    <origin rpy="0 0 0" xyz="0 0 ${base_h}"/>
+    <axis xyz = "0 0 1"/>
+  </joint>
+
+  <link name="shoulder_link">
+    <visual>
+    <origin rpy="0.0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://nixus_arm/meshes/NIXUS_shoulder.stl"/>
+      </geometry>
+    </visual>
+  </link>
+
+      <joint name="shoulder_joint" type="revolute">
+    <parent link="shoulder_link"/>
+    <child link="humerus_link"/>
+    <limit effort="1000.0" lower="0" upper="${pi/2}" velocity="0.5"/>
+    <origin rpy="0 ${-pi/2} 0" xyz="0 0 ${shoulder_h}"/>
+    <axis xyz = "0 0 1"/>
+  </joint>
+
+  <link name="humerus_link">
+    <visual>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://nixus_arm/meshes/NIXUS_humerus.stl"/>
+      </geometry>
+    </visual>
+  </link>
+
+      <joint name="elbow_joint" type="revolute">
+    <parent link="humerus_link"/>
+    <child link="ulna_link"/>
+    <limit effort="1000.0" lower="-${4.5*pi/6}" upper="${4.5*pi/6}" velocity="0.5"/>
+    <origin rpy="0 0 0" xyz="${humerus_h} 0 0"/>
+    <axis xyz = "0 0 1"/>
+  </joint>
+
+  <link name="ulna_link">
+    <visual>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://nixus_arm/meshes/NIXUS_ulna.stl"/>
+      </geometry>
+    </visual>
+  </link>
+
+      <joint name="wrist_joint" type="continuous">
+    <parent link="ulna_link"/>
+    <child link="wrist_link"/>
+    <limit effort="1000.0" velocity="0.5"/>
+    <origin rpy="0 ${pi/2} 0" xyz="${ulna_h} 0 0"/>
+    <axis xyz = "0 0 1"/>
+  </joint>
+
+  <link name="wrist_link">
+    <visual>
+    <origin rpy="0 0 -${pi/6}" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://nixus_arm/meshes/NIXUS_wrist.stl"/>
+      </geometry>
+    </visual>
+  </link>
+
+      <joint name="end_joint" type="revolute">
+    <parent link="wrist_link"/>
+    <child link="end_link"/>
+    <limit effort="1000.0" lower="-${pi/2}" upper="${pi/2}" velocity="0.5"/>
+    <origin rpy="0 0 0" xyz="0 0 ${wrist_h}"/>
+    <axis xyz = "1 0 0"/>
+  </joint>
+
+  <link name="end_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 ${end_h/2}"/>
+      <geometry>
+        <cylinder radius="${end_r}" length="${end_h}"/>
+      </geometry>
+    </visual>
+  </link>
+
+</robot>
