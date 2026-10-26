@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<robot name="NIXUS" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- DESIGN CONSTANTS: -->
+  <xacro:property name="base_h" value="0.1" />
+  <xacro:property name="shoulder_h" value="0.1025" />
+  <xacro:property name="humerus_h" value="0.3125" />
+  <xacro:property name="ulna_h" value="0.1" />
+  <xacro:property name="wrist_h" value="0.08" />
+  <xacro:property name="end_h" value="0.11" />
+  <xacro:property name="end_r" value="0.005" />
+
+  <!-- SIMULATION PLACEHOLDERS: -->
+  <xacro:property name="mesh_scale" value="0.001 0.001 0.001" /> <!-- for mesh from m to mm -->
+  <xacro:property name="white" value="0.9 0.9 0.9 0.9" />
+  <xacro:property name="orange" value="1 0.65 0.0 0.9" />
+
+  <!-- SHORTENINGS: -->
+  <xacro:macro name="nixus_mesh_link" 
+  params="name mesh_name material mass move_xyz rot_rpy">
+    <link name="${name}">
+      <visual>
+      <origin rpy="${rot_rpy}" xyz="${move_xyz}"/>
+        <geometry>
+          <mesh filename="package://nixus/meshes/${mesh_name}.stl" scale="${mesh_scale}"/>
+        </geometry>
+        <material name="${material}">
+          <color rgba="${material}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://nixus/meshes/${mesh_name}.stl" scale="${mesh_scale}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="${mass}"/>
+        <inertia
+      ixx="10.0" ixy="0.50" ixz="0.50"
+      iyy="10.0" iyz="0.50"
+      izz="10.0"/>
+      </inertial>
+    </link>
+  </xacro:macro>
+
+
+  <xacro:macro name="nixus_cylinder_link" 
+  params="name radius length material mass move_xyz rot_rpy">
+    <link name="${name}">
+      <visual>
+      <origin rpy="${rot_rpy}" xyz="${move_xyz}"/>
+        <geometry>
+          <cylinder radius="${radius}" length="${length}"/>
+        </geometry>
+        <material name="${material}">
+          <color rgba="${material}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder radius="${radius}" length="${length}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="${mass}"/>
+        <inertia
+      ixx="10.0" ixy="0.50" ixz="0.50"
+      iyy="10.0" iyz="0.50"
+      izz="10.0"/>
+      </inertial>
+    </link>
+  </xacro:macro>
+
+
+  <xacro:macro name="nixus_joint"
+  params= "name type parent_name child_name low_limit upp_limit velocity axis move_xyz rot_rpy">
+    <joint name="${name}" type="${type}">
+      <parent link="${parent_name}"/>
+      <child link="${child_name}"/>
+      <limit effort="1000.0" lower="${low_limit}" upper="${upp_limit}" velocity="${velocity}"/>
+      <dynamics damping="0.0" friction="1000"/>
+      <origin rpy="${rot_rpy}" xyz="${move_xyz}"/>
+      <axis xyz = "${axis}"/>
+    </joint>
+  </xacro:macro>
+
+  <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+  <xacro:nixus_mesh_link
+  name="base_link" 
+  mesh_name="NIXUS_base" material="${orange}" mass="10000000" 
+  move_xyz="0 0 0" rot_rpy="0 0 0"/>
+
+  <xacro:nixus_joint
+  name="base_joint" 
+  type="revolute" parent_name="base_link" child_name="shoulder_link" 
+  low_limit="-${pi/2}" upp_limit="${pi/2}" velocity="1" 
+  axis="0 0 1" move_xyz="0 0 ${base_h}" rot_rpy="0 0 0"/>
+
+  <xacro:nixus_cylinder_link 
+  name="shoulder_link" 
+  radius="${shoulder_h/2}" length="${shoulder_h}" material="${white}" 
+  mass="1" move_xyz="0 0 0" rot_rpy="0 0 0"/>
+
+  <xacro:nixus_joint
+  name="shoulder_joint" 
+  type="revolute" parent_name="shoulder_link" child_name="humerus_link" 
+  low_limit="0" upp_limit="${pi/2}" velocity="1" 
+  axis="0 0 1" move_xyz="0 0 ${base_h}" rot_rpy="0 ${-pi/2} 0"/>
+
+  <xacro:nixus_mesh_link 
+  name="humerus_link" 
+  mesh_name="NIXUS_humerus" material="${white}" mass="1" 
+  move_xyz="0 0 0" rot_rpy="0 0 0"/>
+
+  <xacro:nixus_joint
+  name="elbow_joint" 
+  type="revolute" parent_name="humerus_link" child_name="ulna_link" 
+  low_limit="-${4.5*pi/6}" upp_limit="${4.5*pi/6}" velocity="1" 
+  axis="0 0 1" move_xyz="${humerus_h} 0 0" rot_rpy="0 0 0"/>
+
+  <xacro:nixus_cylinder_link 
+  name="ulna_link" 
+  radius="${ulna_h/3}" length="${ulna_h}" material="${white}"  
+  mass="1" move_xyz="${ulna_h/2} 0 0" rot_rpy="0 ${pi/2} 0"/>
+
+  <xacro:nixus_joint
+  name="wrist_joint" 
+  type="continuous" parent_name="ulna_link" child_name="wrist_link" 
+  low_limit="-1000" upp_limit="1000" velocity="1" 
+  axis="0 0 1" move_xyz="${ulna_h} 0 0" rot_rpy="0 ${pi/2} 0"/>
+
+  <xacro:nixus_mesh_link 
+  name="wrist_link" 
+  mesh_name="NIXUS_wrist" material="${white}"  mass="1" 
+  move_xyz="0 0 0" rot_rpy="0 0 -${pi/6}"/>
+
+  <xacro:nixus_joint
+  name="end_joint" 
+  type="revolute" parent_name="wrist_link" child_name="end_link" 
+  low_limit="-${pi/2}" upp_limit="${pi/2}" velocity="1" 
+  axis="1 0 0" move_xyz="0 0 ${wrist_h}" rot_rpy="0 0 0"/>
+
+  <xacro:nixus_cylinder_link 
+  name="end_link" 
+  radius="${end_r}" length="${end_h}" material="${orange}"  
+  mass="1" move_xyz="0 0 ${end_h/2}" rot_rpy="0 0 0"/>
+
+  <!--
+  <xacro:nixus_cylinder_link
+  name="end_point" 
+  radius="0.001" length="0.001" material="${white}"  
+  mass="1" move_xyz="0 0 ${wrist_h}" rot_rpy="0 0 0"/>
+  -->
+
+  <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+  <plugin name="gazebo_ros_joint_state_publisher"
+    filename="libgazebo_ros_joint_state_publisher.so">
+
+    <ros>
+        <!-- Add a namespace -->
+        <namespace>/arm_joints</namespace>
+    </ros>
+    <!-- Update rate in Hertz -->
+    <update_rate>20</update_rate>
+    <!-- Name of joints in the model whose states will be published. -->
+    <joint_name>base_joint</joint_name>
+    <joint_name>shoulder_joint</joint_name>
+    <joint_name>elbow_joint</joint_name>
+    <joint_name>wrist_joint</joint_name>
+    <joint_name>end_joint</joint_name>
+
+  </plugin>
+  
+</robot>
