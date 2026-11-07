@@ -7,9 +7,9 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     ld = LaunchDescription()
 
-    nixus_path = FindPackageShare('nixus')
-    default_model_path = PathJoinSubstitution(['urdf', 'nixus_v1.urdf'])
-    default_rviz_config_path = PathJoinSubstitution([nixus_path, 'rviz', 'urdf.rviz'])
+    urdf_tutorial_path = FindPackageShare('nixus')
+    default_model_path = PathJoinSubstitution(['urdf', 'nixus_v0.urdf'])
+    default_rviz_config_path = PathJoinSubstitution([urdf_tutorial_path, 'rviz', 'urdf.rviz'])
 
     # These parameters are maintained for backwards compatibility
     gui_arg = DeclareLaunchArgument(name='gui', default_value='true', choices=['true', 'false'],

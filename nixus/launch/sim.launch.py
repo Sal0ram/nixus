@@ -8,8 +8,8 @@ import os
 
 def generate_launch_description():   
     pkg_share = FindPackageShare(package='nixus').find("nixus")
-    default_model_path = os.path.join(pkg_share, 'urdf', 'nixus_v2.urdf')
-    #default_rviz_config_path = os.path.join(pkg_share, 'rviz', 'config.rviz')
+    default_model_path = os.path.join(pkg_share, 'urdf', 'nixus_v0.urdf')
+    default_rviz_config_path = os.path.join(pkg_share, 'rviz', 'config.rviz')
 
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
@@ -29,20 +29,20 @@ def generate_launch_description():
         name='joint_state_publisher_gui',
         condition=IfCondition(LaunchConfiguration('gui'))
     )
-    #rviz_node = Node(
-    #    package='rviz2',
-    #    executable='rviz2',
-    #    name='rviz2',
-    #    output='screen',
-    #    arguments=['-d', LaunchConfiguration('rvizconfig')],
-    #)
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        arguments=['-d', LaunchConfiguration('rvizconfig')],
+    )
         
     return LaunchDescription([
         DeclareLaunchArgument(name='gui', default_value='True', description='Flag to enable joint_state_publisher_gui'),
         DeclareLaunchArgument(name='model', default_value=default_model_path, description='Absolute path to robot model file'),
-        #DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path, description='Absolute path to rviz config file'),
+        DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path, description='Absolute path to rviz config file'),
         joint_state_publisher_node,
         joint_state_publisher_gui_node,
         robot_state_publisher_node,
-        #rviz_node
+        rviz_node
     ])
